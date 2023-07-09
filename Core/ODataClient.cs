@@ -70,20 +70,14 @@ public class ODataClient : IODataClient
                         Convert.ChangeType(jValue.Value<string>(), propertyInfo.PropertyType));
                     continue;
                 case JObject jObject when jObject.Property(ODATA_ID) != null:
-                    var intermediateJObject = await Get(baseUrl + jObject.Value<string>(ODATA_ID));
+                    var intermediateJObject = await Get(baseUrl + jObject.Value<string>(ODATA_ID) + "?$expand=.");
                     var membersJArray = intermediateJObject.SelectToken(MEMBERS);
 
                     if (membersJArray != null && IsGenericListType(propertyInfo.PropertyType))
                     {
-                        var members = await Task.WhenAll(membersJArray
-                            .Values()
-                            .Cast<JProperty>()
-                            .Where(x => x.Name == ODATA_ID)
-                            .Select(x => Get(baseUrl + x.Value.Value<string>()!)));
-
                         var genericArg = propertyInfos.PropertyType.GenericTypeArguments[0];
 
-                        var recursiveResults = await Task.WhenAll(members
+                        var recursiveResults = await Task.WhenAll(membersJArray
                             .Select(o => TraverseType(genericArg, o, baseUrl)));
 
                         propertyInfo.SetValue(instance, CreateAndPopulateList(genericArg, recursiveResults));
