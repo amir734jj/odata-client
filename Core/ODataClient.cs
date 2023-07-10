@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using App.Attributes;
 using Core.Interfaces;
@@ -22,6 +22,11 @@ public class ODataClient : IODataClient
     public async Task<T> Get<T>(Uri url) where T : class, new()
     {
         return (T)await TraverseType(typeof(T), await Get(url.AbsoluteUri), url.AbsoluteUri);
+        var absoluteUriWithoutPath = url.GetComponents(
+            UriComponents.Scheme | UriComponents.Host | UriComponents.Port,
+            UriFormat.UriEscaped);
+        
+        return (T)await TraverseType(typeof(T), await Get(url.AbsoluteUri), absoluteUriWithoutPath);
     }
 
     private async Task<JObject> Get(string url)
