@@ -57,7 +57,7 @@ internal class Program
     {
         var httpClientHandler = new HttpClientHandler();
         httpClientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true; 
-        var httpClient = new HttpClient(new HttpClientHandler());
+        var httpClient = new HttpClient(httpClientHandler);
 
         var oDataClient = new ODataClient(httpClient);
 
